@@ -1,0 +1,79 @@
+# Heart Disease MLOps Configuration
+# =================================
+
+# Project Settings
+project:
+  name: "heart-disease-mlops"
+  version: "1.0.0"
+  description: "Heart Disease Prediction MLOps Pipeline"
+
+# Data Settings
+data:
+  raw_path: "data/raw/heart.csv"
+  processed_path: "data/processed"
+  test_size: 0.2
+  random_state: 42
+  
+  # UCI Dataset URL
+  download_url: "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
+  
+  # Feature columns
+  feature_columns:
+    - age
+    - sex
+    - cp
+    - trestbps
+    - chol
+    - fbs
+    - restecg
+    - thalach
+    - exang
+    - oldpeak
+    - slope
+    - ca
+    - thal
+  
+  target_column: "target"
+
+# Model Settings
+model:
+  save_path: "models"
+  best_model_name: "best_model.joblib"
+  pipeline_name: "preprocessing_pipeline.joblib"
+  
+  # Models to train
+  models:
+    logistic_regression:
+      max_iter: 1000
+      C: 1.0
+      solver: "lbfgs"
+    
+    random_forest:
+      n_estimators: 100
+      max_depth: 10
+      min_samples_split: 5
+      min_samples_leaf: 2
+      random_state: 42
+
+# MLflow Settings
+# Using SQLite backend for reliability in Jenkins CI/CD
+# File-based "mlruns" can cause locking issues in automated pipelines
+mlflow:
+  tracking_uri: "sqlite:///mlflow.db"  # SQLite database (more reliable than file store)
+  artifact_location: "./mlartifacts"   # Separate artifact storage
+  experiment_name: "heart-disease-classification"
+  log_models_to_registry: false        # Disabled for Jenkins compatibility
+  
+# API Settings
+api:
+  host: "0.0.0.0"
+  port: 8000
+  title: "Heart Disease Prediction API"
+  description: "API for predicting heart disease risk"
+  version: "1.0.0"
+
+# Monitoring Settings
+monitoring:
+  prometheus_port: 9090
+  enable_metrics: true
+

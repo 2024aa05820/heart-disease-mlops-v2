@@ -1,0 +1,44 @@
+# Prometheus Configuration for Heart Disease MLOps
+# ================================================
+
+global:
+  scrape_interval: 15s          # How often to scrape targets
+  evaluation_interval: 15s      # How often to evaluate rules
+  external_labels:
+    monitor: 'heart-disease-mlops'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Rule files for alerts
+rule_files:
+  - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Heart Disease API
+  - job_name: 'heart-disease-api'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['heart-disease-api-service:8000']
+    # For Minikube, use the service name
+    # Or use: ['<minikube-ip>:30080']
+    
+  # Alternative: Kubernetes service discovery
+  # Uncomment if using in K8s cluster
+  # kubernetes_sd_configs:
+  #   - role: pod
+  # relabel_configs:
+  #   - source_labels: [__meta_kubernetes_pod_label_app]
+  #     action: keep
+  #     regex: heart-disease-api
+

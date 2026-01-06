@@ -1,0 +1,45 @@
+# Alertmanager Configuration
+# ==========================
+
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'severity']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'default-receiver'
+  
+  routes:
+    # Critical alerts
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      continue: true
+    
+    # Warning alerts
+    - match:
+        severity: warning
+      receiver: 'default-receiver'
+
+receivers:
+  - name: 'default-receiver'
+    # Webhook for generic notifications (can be Slack, PagerDuty, etc.)
+    webhook_configs:
+      - url: 'http://localhost:5001/alert'
+        send_resolved: true
+
+  - name: 'critical-receiver'
+    # For critical alerts, you might want to add email/SMS
+    webhook_configs:
+      - url: 'http://localhost:5001/alert'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname']
+
