@@ -277,6 +277,119 @@ The API exposes Prometheus metrics at `/metrics`:
 - `heart_disease_requests_total` - Total requests
 - `heart_disease_errors_total` - Total errors
 
+## 🐛 Troubleshooting
+
+### Docker Permission Denied
+
+**Error:**
+```
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
+```
+
+**Solution:**
+```bash
+# Add your user to docker group
+sudo usermod -aG docker $USER
+
+# Apply group change immediately
+newgrp docker
+
+# Verify docker works
+docker ps
+
+# Now start Minikube
+minikube start --driver=docker --cpus=2 --memory=4096
+```
+
+If `newgrp` doesn't work, **log out and log back in**:
+```bash
+exit
+# SSH back in, then retry
+```
+
+---
+
+### Jenkins Can't Access Docker
+
+**Error:** Jenkins build fails with "permission denied"
+
+**Solution:**
+```bash
+sudo usermod -aG docker jenkins
+sudo systemctl restart jenkins
+```
+
+---
+
+### Jenkins Can't Access Minikube
+
+**Error:** `cluster minikube does not exist`
+
+**Solution:**
+```bash
+# Ensure Minikube is running first
+minikube status
+
+# Then configure Jenkins
+sudo ./scripts/configure-jenkins-minikube.sh
+```
+
+---
+
+### Minikube Won't Start
+
+**Error:** Minikube fails to start
+
+**Solution:**
+```bash
+# Delete and recreate
+minikube delete
+minikube start --driver=docker --cpus=2 --memory=4096
+```
+
+---
+
+### Port Already in Use
+
+**Error:** `Bind for 0.0.0.0:8001 failed: port is already allocated`
+
+**Solution:**
+```bash
+# Find and stop container using the port
+docker ps -a | grep 8001
+docker stop <container-id>
+docker rm <container-id>
+```
+
+---
+
+### Firewall Blocking Ports
+
+**Error:** Can't access Jenkins or API
+
+**Solution:**
+```bash
+sudo firewall-cmd --permanent --add-port=8080/tcp
+sudo firewall-cmd --permanent --add-port=5001/tcp
+sudo firewall-cmd --permanent --add-port=30080/tcp
+sudo firewall-cmd --reload
+```
+
+---
+
+### Models Not Found
+
+**Error:** `models/best_model.joblib not found`
+
+**Solution:**
+```bash
+# Train models manually
+source venv/bin/activate
+python scripts/download_data.py
+python scripts/train.py
+ls -la models/
+```
+
 ## 👤 Author
 
 - **Course:** MLOps (S1-25_AIMLCZG523)
